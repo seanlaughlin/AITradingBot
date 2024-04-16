@@ -3,17 +3,14 @@ from ta.trend import MACD
 from ta.momentum import roc
 from tensorflow.keras.models import model_from_json
 import numpy as np
-import joblib
 
 
-class RoiBot:
-    def __init__(self, ticker_symbol, model_architecture_path, model_weights_path, scaler_X_path, scaler_y_path):
+class BacktestRoiBot:
+    def __init__(self, ticker_symbol, model_architecture_path, model_weights_path):
         self.prediction_candle = None
         self.ticker_symbol = ticker_symbol
         self.model = self.load_model(model_architecture_path, model_weights_path)
         self.data = self.get_last_26_candles()
-        self.scaler_X = self.load_scaler(scaler_X_path)
-        self.scaler_y = self.load_scaler(scaler_y_path)
         self.update_features()
 
     def load_model(self, model_architecture_path, model_weights_path):
@@ -25,10 +22,6 @@ class RoiBot:
         loaded_model.load_weights(model_weights_path)
 
         return loaded_model
-
-    def load_scaler(self, scaler_path):
-        scaler = joblib.load(scaler_path)
-        return scaler
 
     def get_last_26_candles(self):
         data = yf.download(self.ticker_symbol, interval='15m', period='5d')
@@ -62,6 +55,7 @@ class RoiBot:
         self.data['Momentum_Change'] = self.data['Momentum'].diff()
 
         latest_candle = self.data.iloc[-1]
+
         latest_candle_features = [
             latest_candle['Close'],
             latest_candle['Volume'],
@@ -69,9 +63,9 @@ class RoiBot:
             latest_candle['MACD_Cross'],
             latest_candle['Momentum_Change']
         ]
-        self.prediction_candle = self.scaler_X.transform(np.array(latest_candle_features).reshape(1, -1))
+        self.prediction_candle = np.array(latest_candle_features).reshape(1, -1)
 
     def predict_roi(self):
+        feature_names = ['Close', 'Volume', 'Momentum', 'MACD_Cross', 'Momentum_Change']
         prediction = self.model.predict(self.prediction_candle)
-        prediction_scaled = self.scaler_y.inverse_transform(prediction)
-        return prediction_scaled[0][0]
+        return prediction[0][0]

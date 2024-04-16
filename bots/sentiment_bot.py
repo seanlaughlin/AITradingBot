@@ -42,6 +42,9 @@ class SentimentBot:
     def analyse_sentiment(self):
         try:
             sentiment_responses = []
+            positive_count = 0
+            negative_count = 0
+            neutral_count = 0
 
             for index, row in self.latest_news.iterrows():
                 headline = row['headline']
@@ -53,7 +56,7 @@ class SentimentBot:
                     print(f"Error analyzing sentiment for '{headline}': {response.error}")
                 else:
                     sentiment_label = "POSITIVE" if response.confidence_scores["positive"] > 0.3 else "NEGATIVE" if \
-                    response.confidence_scores["negative"] > 0.3 else "NEUTRAL"
+                        response.confidence_scores["negative"] > 0.3 else "NEUTRAL"
 
                     sentiment_response = {
                         'date': date,
@@ -62,6 +65,17 @@ class SentimentBot:
                         'confidence_scores': response.confidence_scores
                     }
                     sentiment_responses.append(sentiment_response)
+
+                    if sentiment_label == "POSITIVE":
+                        positive_count += 1
+                    elif sentiment_label == "NEGATIVE":
+                        negative_count += 1
+                    else:
+                        neutral_count += 1
+
+            print("Number of positive articles:", positive_count)
+            print("Number of negative articles:", negative_count)
+            print("Number of neutral articles:", neutral_count)
 
             self.news_sentiment = sentiment_responses
             return sentiment_response

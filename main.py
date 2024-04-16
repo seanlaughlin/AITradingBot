@@ -13,17 +13,13 @@ def calculate_roi_points(predicted_roi):
     roi_points = 0
     if predicted_roi > 0:
         roi_points = roi_points + 1
-    if predicted_roi > 0.2:
+    if predicted_roi > 0.5:
         roi_points = roi_points + 1
     if predicted_roi < 0:
         roi_points = roi_points - 1
-    if predicted_roi < -0.1:
+    if predicted_roi < -0.5:
         roi_points = roi_points - 1
     return roi_points
-
-
-def calculate_sentiment_points(sentiment_ratings):
-    return ""
 
 
 if __name__ == '__main__':
@@ -38,7 +34,10 @@ if __name__ == '__main__':
     # setup for roi bot
     model_architecture_path = 'resources/roi_lstm/roi_lstm_model_architecture.json'
     model_weights_path = 'resources/roi_lstm/roi_lstm_model_weights.h5'
-    roi_bot = RoiBot(ticker_symbol, model_architecture_path, model_weights_path)
+    scaler_X_path = "resources/roi_lstm/scaler_X.pkl"
+    scaler_y_path = "resources/roi_lstm/scaler_y.pkl"
+
+    roi_bot = RoiBot(ticker_symbol, model_architecture_path, model_weights_path, scaler_X_path, scaler_y_path)
 
     # setup for sentiment bot
     azure_api_key = os.getenv('AZURE-KEY')
@@ -61,10 +60,13 @@ if __name__ == '__main__':
         print('Total Points: ', total_points)
 
         if 1 <= total_points <= 2:
+            print('Executing buy order (normal)...')
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=1)
         elif total_points > 2:
+            print('Executing buy order (large)...')
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=2)
         elif total_points <= 0:
+            print('Executing sell order...')
             trader.sell(symbol=ticker_symbol)
         else:
             print("No trade action taken.")
