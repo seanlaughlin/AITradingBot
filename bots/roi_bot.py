@@ -3,7 +3,6 @@ from ta.trend import MACD
 from ta.momentum import roc
 from tensorflow.keras.models import model_from_json
 import numpy as np
-import pandas as pd
 
 
 class RoiBot:
@@ -65,7 +64,6 @@ class RoiBot:
             latest_candle['Momentum_Change']
         ]
         self.prediction_candle = np.array(latest_candle_features).reshape(1, -1)
-        print(self.prediction_candle)
 
     def predict_roi(self):
         feature_names = ['Close', 'Volume', 'Momentum', 'MACD_Cross', 'Momentum_Change']
