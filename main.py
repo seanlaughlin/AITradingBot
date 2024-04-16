@@ -64,7 +64,7 @@ if __name__ == '__main__':
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=1)
         elif total_points > 2:
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=2)
-        elif total_points < 0:
+        elif total_points <= 0:
             trader.sell(symbol=ticker_symbol)
         else:
             print("No trade action taken.")
