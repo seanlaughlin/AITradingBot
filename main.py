@@ -11,7 +11,7 @@ import time
 
 def calculate_roi_points(predicted_roi):
     roi_points = 0
-    if predicted_roi > 0:
+    if predicted_roi > 0.1:
         roi_points = roi_points + 1
     if predicted_roi > 0.5:
         roi_points = roi_points + 1
