@@ -59,15 +59,22 @@ if __name__ == '__main__':
         total_points = sentiment_points + roi_points
         print('Total Points: ', total_points)
 
+        balance = trader.check_balance()
+        formatted_balance = "${:,.2f}".format(balance)
+
+        print('Account value: ', formatted_balance)
         if 1 <= total_points <= 2:
             print('Executing buy order (normal)...')
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=1)
+            print('New balance: ', "${:,.2f}".format(trader.check_balance()))
         elif total_points > 2:
             print('Executing buy order (large)...')
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=2)
+            print('New balance: ', "${:,.2f}".format(trader.check_balance()))
         elif total_points <= 0:
             print('Executing sell order...')
             trader.sell(symbol=ticker_symbol)
+            print('New balance: ', "${:,.2f}".format(trader.check_balance()))
         else:
             print("No trade action taken.")
 

@@ -25,7 +25,7 @@ class Trader:
                 order_details = MarketOrderRequest(symbol=symbol, qty=qty*multiplier, side=OrderSide.BUY, time_in_force=TimeInForce.GTC)
                 self.api.submit_order(order_data=order_details)
                 self.buy_price = self.get_price(symbol, 'buy')
-                print(f"Bought {qty} shares of {symbol} at ${self.buy_price} successfully.")
+                print(f"Bought {qty * multiplier} shares of {symbol} at ${self.buy_price} successfully.")
                 self.holding_order = True
                 self.qtyHeld = qty
                 self.bought_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -62,7 +62,7 @@ class Trader:
 
     def check_balance(self):
         account = self.api.get_account()
-        return float(account.buying_power)
+        return float(account.portfolio_value)
 
     def check_positions(self):
         positions = self.api.get_all_positions()
