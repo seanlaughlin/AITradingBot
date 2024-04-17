@@ -31,7 +31,7 @@ class RoiBot:
         return scaler
 
     def get_last_26_candles(self):
-        data = yf.download(self.ticker_symbol, interval='15m', period='5d')
+        data = yf.download(self.ticker_symbol, interval='15m', period='5d', prepost=True)
         last_26_candles = data.iloc[-26:]
         return last_26_candles
 
@@ -49,7 +49,7 @@ class RoiBot:
         self.data['Momentum_Change'] = self.data['Momentum'].diff()
 
     def update_features(self):
-        self.data = yf.download(self.ticker_symbol, interval='15m', period='7d')
+        self.data = yf.download(self.ticker_symbol, interval='15m', period='7d', prepost=True)
 
         macd = MACD(self.data['Close'])
         self.data['MACD'] = macd.macd()

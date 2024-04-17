@@ -1,3 +1,6 @@
+import json
+import os
+
 import pandas as pd
 from datetime import datetime, timedelta
 import feedparser
@@ -78,6 +81,7 @@ class SentimentBot:
             print("Number of neutral articles:", neutral_count)
 
             self.news_sentiment = sentiment_responses
+            self.save_sentiment_history()
             return sentiment_response
         except Exception as e:
             print(f"Error analyzing sentiment: {e}")
@@ -105,4 +109,21 @@ class SentimentBot:
             print(f"Error calculating overall sentiment: {e}")
             return None
 
+    def save_sentiment_history(self, filename="sentiment_history.json"):
+        try:
+            if self.news_sentiment is not None:
+                if not os.path.exists(filename):
+                    with open(filename, "w") as f:
+                        json.dump([self.news_sentiment], f, indent=4)
+                else:
+                    with open(filename, "r+") as f:
+                        data = json.load(f)
+                        data.append(filename)
+                        f.seek(0)
+                        json.dump(data, f, indent=4)
+                print(f"Sentiment history saved to '{filename}'.")
+            else:
+                print("No sentiment history to save.")
+        except Exception as e:
+            print(f"Error saving sentiment history: {e}")
 
