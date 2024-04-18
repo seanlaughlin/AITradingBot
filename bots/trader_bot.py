@@ -14,7 +14,7 @@ class Trader:
         self.api = TradingClient(api_key, api_secret, paper=True)
         self.historical_data_api = StockHistoricalDataClient(api_key, api_secret)
         self.account = dict(self.api.get_account())
-        self.holding_order = False
+        self.holding_order = len(self.api.get_all_positions()) != 0
         self.qtyHeld = 0
         self.buy_price = 0
         self.bought_at = ""
