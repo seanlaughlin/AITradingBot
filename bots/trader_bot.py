@@ -78,7 +78,8 @@ class Trader:
             "sell_price": sell_price,
             "pnl": round(pnl, 2),
             "bought_at": self.bought_at,
-            "sold_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "sold_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "account_value": "${:,.2f}".format(self.check_balance())
         }
 
         trade_history_file = "trade_history.json"
