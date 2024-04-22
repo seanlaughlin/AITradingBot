@@ -1,5 +1,6 @@
 import json
 import os
+import logging
 
 import pandas as pd
 from datetime import datetime, timedelta
@@ -56,7 +57,7 @@ class SentimentBot:
                 response = self.client.analyze_sentiment(documents=[headline], language="en")[0]
 
                 if response.is_error:
-                    print(f"Error analyzing sentiment for '{headline}': {response.error}")
+                    logging.info(f"Error analyzing sentiment for '{headline}': {response.error}")
                 else:
                     sentiment_label = "POSITIVE" if response.confidence_scores["positive"] > 0.3 else "NEGATIVE" if \
                         response.confidence_scores["negative"] > 0.3 else "NEUTRAL"
@@ -76,15 +77,15 @@ class SentimentBot:
                     else:
                         neutral_count += 1
 
-            print("Number of positive articles:", positive_count)
-            print("Number of negative articles:", negative_count)
-            print("Number of neutral articles:", neutral_count)
+            logging.info("Number of positive articles: %s", positive_count)
+            logging.info("Number of negative articles: %s", negative_count)
+            logging.info("Number of neutral articles: %s", neutral_count)
 
             self.news_sentiment = sentiment_responses
             self.save_sentiment_history()
             return sentiment_response
         except Exception as e:
-            print(f"Error analyzing sentiment: {e}")
+            logging.error(f"Error analyzing sentiment: {e}")
             return None
 
     def update(self):
@@ -106,7 +107,7 @@ class SentimentBot:
                     overall_sentiment_score -= 0.5
             return overall_sentiment_score
         except Exception as e:
-            print(f"Error calculating overall sentiment: {e}")
+            logging.error(f"Error calculating overall sentiment: {e}")
             return None
 
     def save_sentiment_history(self, filename="sentiment_history.json"):
@@ -121,9 +122,9 @@ class SentimentBot:
                         data.append(filename)
                         f.seek(0)
                         json.dump(data, f, indent=4)
-                print(f"Sentiment history saved to '{filename}'.")
+                logging.info(f"Sentiment history saved to '{filename}'.")
             else:
                 print("No sentiment history to save.")
         except Exception as e:
-            print(f"Error saving sentiment history: {e}")
+            logging.error(f"Error saving sentiment history: {e}")
 

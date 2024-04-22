@@ -7,6 +7,7 @@ from bots.sentiment_bot import SentimentBot
 from bots.trader_bot import Trader
 import os
 import time
+import logging
 
 
 def calculate_roi_points(predicted_roi):
@@ -24,6 +25,10 @@ def calculate_roi_points(predicted_roi):
 
 if __name__ == '__main__':
     load_dotenv()
+    logging.basicConfig(filename='./log/bot_log.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    logging.getLogger('').addHandler(console_handler)
     ticker_symbol = 'SPY'
 
     # setup for trader bot
@@ -48,35 +53,35 @@ if __name__ == '__main__':
     while True:
         roi_bot.update_features()
         predicted_roi = roi_bot.predict_roi()
-        print('Time: ', datetime.now())
-        print("Predicted ROI (15 minutes):", predicted_roi)
+        logging.info('Time: %s', datetime.now())
+        logging.info("Predicted ROI (15 minutes): %s", predicted_roi)
         roi_points = calculate_roi_points(predicted_roi)
-        print('ROI Points: ', roi_points)
-        print('Getting news sentiment...')
+        logging.info('ROI Points: %s', roi_points)
+        logging.info('Getting news sentiment...')
         sentiment_bot.update()
         sentiment_points = sentiment_bot.get_overall_sentiment()
-        print('Sentiment Points: ', sentiment_points)
+        logging.info('Sentiment Points: %s', sentiment_points)
         total_points = sentiment_points + roi_points
-        print('Total Points: ', total_points)
+        logging.info('Total Points: %s', total_points)
 
         balance = trader.check_balance()
         formatted_balance = "${:,.2f}".format(balance)
 
-        print('Account value: ', formatted_balance)
+        logging.info('Account value: %s', formatted_balance)
         if 0.5 <= total_points <= 2:
-            print('Executing buy order (normal)...')
+            logging.info('Executing buy order (normal)...')
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=1)
-            print('New balance: ', "${:,.2f}".format(trader.check_balance()))
+            logging.info('New balance: %s', "${:,.2f}".format(trader.check_balance()))
         elif total_points > 2:
-            print('Executing buy order (large)...')
+            logging.info('Executing buy order (large)...')
             trader.buy(symbol=ticker_symbol, qty=10, multiplier=2)
-            print('New balance: ', "${:,.2f}".format(trader.check_balance()))
+            logging.info('New balance: %s', "${:,.2f}".format(trader.check_balance()))
         elif total_points < 0:
-            print('Executing sell order...')
+            logging.info('Executing sell order...')
             trader.sell(symbol=ticker_symbol)
-            print('New balance: ', "${:,.2f}".format(trader.check_balance()))
+            logging.info('New balance: %s', "${:,.2f}".format(trader.check_balance()))
         else:
-            print("No trade action taken.")
+            logging.info("No trade action taken.")
 
-        print('Sleeping for 15 min...')
+        logging.info('Sleeping for 15 min...')
         time.sleep(15 * 60)

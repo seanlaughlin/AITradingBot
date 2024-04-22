@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import logging
 
 from alpaca.trading import MarketOrderRequest
 from alpaca.trading.client import TradingClient
@@ -27,17 +28,17 @@ class Trader:
             if not self.holding_order:
                 order_details = MarketOrderRequest(symbol=symbol, qty=qty*multiplier, side=OrderSide.BUY, time_in_force=TimeInForce.GTC)
                 order = self.api.submit_order(order_data=order_details)
-                if order.filled_at is None:
-                    raise Exception('Order not filled. Queued for market open.')
+                if order is None:
+                    raise Exception('Order not submitted. An error occurred')
                 self.buy_price = self.get_price(symbol, 'buy')
-                print(f"Bought {qty * multiplier} shares of {symbol} at ${self.buy_price} successfully.")
+                logging.info(f"Bought {qty * multiplier} shares of {symbol} at ${self.buy_price} successfully.")
                 self.holding_order = True
                 self.qtyHeld = qty
                 self.bought_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             else:
-                print("Currently holding an order. No buy executed.")
+                logging.info("Currently holding an order. No buy executed.")
         except Exception as e:
-            print(f"Failed to buy {qty} shares of {symbol}: {e}")
+            logging.error(f"Failed to buy {qty} shares of {symbol}: {e}")
 
     def sell(self, symbol):
         try:
@@ -45,16 +46,16 @@ class Trader:
                 bid_price = self.get_price(symbol, 'sell')
                 self.api.close_all_positions(cancel_orders=True)
                 quantity = self.api.get_all_positions()[0].qty
-                print(f"Sold {quantity} shares of {symbol} at ${bid_price} successfully.")
+                logging.info(f"Sold {quantity} shares of {symbol} at ${bid_price} successfully.")
                 self.holding_order = False
                 self.update_trade_history(symbol, bid_price)
                 self.qtyHeld = 0
                 self.buy_price = 0
                 self.bought_at = ""
             else:
-                print('Unable to sell. Not currently holding a position.')
+                logging.info('Unable to sell. Not currently holding a position.')
         except Exception as e:
-            print(f"Failed to sell {self.qtyHeld} shares of {symbol}: {e}")
+            logging.error(f"Failed to sell {self.qtyHeld} shares of {symbol}: {e}")
 
     def get_price(self, symbol, side):
         request_params = StockLatestQuoteRequest(symbol_or_symbols=symbol)
@@ -64,7 +65,7 @@ class Trader:
         elif side == 'sell':
             return latest_quote['SPY'].bid_price
         else:
-            print('No side (buy/sell) specified, unable to provide quote.')
+            logging.error('No side (buy/sell) specified, unable to provide quote.')
 
     def check_balance(self):
         account = self.api.get_account()
