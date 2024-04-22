@@ -1,0 +1,4 @@
+.env
+/log/*
+sentiment_history.json
+trade_history.json
