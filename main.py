@@ -25,10 +25,13 @@ def calculate_roi_points(predicted_roi):
 
 if __name__ == '__main__':
     load_dotenv()
+
+    # set up logging and logging config
     logging.basicConfig(filename='./log/bot_log.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     logging.getLogger('').addHandler(console_handler)
+
     ticker_symbol = 'SPY'
 
     # setup for trader bot
