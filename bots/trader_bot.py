@@ -16,14 +16,19 @@ class Trader:
         self.account = dict(self.api.get_account())
         self.holding_order = len(self.api.get_all_positions()) != 0
         self.qtyHeld = 0
-        self.buy_price = 0
+        if len(self.api.get_all_positions()) > 0:
+            self.buy_price = self.api.get_all_positions()[0].avg_entry_price
+        else:
+            self.buy_price = 0
         self.bought_at = ""
 
     def buy(self, symbol, qty, multiplier):
         try:
             if not self.holding_order:
                 order_details = MarketOrderRequest(symbol=symbol, qty=qty*multiplier, side=OrderSide.BUY, time_in_force=TimeInForce.GTC)
-                self.api.submit_order(order_data=order_details)
+                order = self.api.submit_order(order_data=order_details)
+                if order.filled_at is None:
+                    raise Exception('Order not filled. Queued for market open.')
                 self.buy_price = self.get_price(symbol, 'buy')
                 print(f"Bought {qty * multiplier} shares of {symbol} at ${self.buy_price} successfully.")
                 self.holding_order = True
@@ -39,7 +44,8 @@ class Trader:
             if self.holding_order:
                 bid_price = self.get_price(symbol, 'sell')
                 self.api.close_all_positions(cancel_orders=True)
-                print(f"Sold {self.qtyHeld} shares of {symbol} at ${bid_price} successfully.")
+                quantity = self.api.get_all_positions()[0].qty
+                print(f"Sold {quantity} shares of {symbol} at ${bid_price} successfully.")
                 self.holding_order = False
                 self.update_trade_history(symbol, bid_price)
                 self.qtyHeld = 0

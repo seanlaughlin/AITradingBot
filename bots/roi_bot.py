@@ -1,7 +1,7 @@
 import yfinance as yf
 from ta.trend import MACD
 from ta.momentum import roc
-from tensorflow.keras.models import model_from_json
+from keras.models import model_from_json
 import numpy as np
 import joblib
 
