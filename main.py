@@ -10,19 +10,6 @@ import time
 import logging
 
 
-def calculate_roi_points(predicted_roi):
-    roi_points = 0
-    if predicted_roi > 0.1:
-        roi_points = roi_points + 1
-    if predicted_roi > 0.5:
-        roi_points = roi_points + 1
-    if predicted_roi < 0:
-        roi_points = roi_points - 1
-    if predicted_roi < -0.5:
-        roi_points = roi_points - 1
-    return roi_points
-
-
 if __name__ == '__main__':
     load_dotenv()
 
@@ -54,11 +41,9 @@ if __name__ == '__main__':
     sentiment_bot = SentimentBot(num_results=5, rss_url=google_news_rss, azure_endpoint=azure_endpoint, azure_key=azure_api_key)
 
     while True:
-        roi_bot.update_features()
-        predicted_roi = roi_bot.predict_roi()
         logging.info('Time: %s', datetime.now())
-        logging.info("Predicted ROI (15 minutes): %s", predicted_roi)
-        roi_points = calculate_roi_points(predicted_roi)
+        roi_bot.update_features()
+        roi_points = roi_bot.get_roi_points()
         logging.info('ROI Points: %s', roi_points)
         logging.info('Getting news sentiment...')
         sentiment_bot.update()

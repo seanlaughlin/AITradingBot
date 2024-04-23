@@ -83,7 +83,7 @@ class SentimentBot:
 
             self.news_sentiment = sentiment_responses
             self.save_sentiment_history()
-            return sentiment_response
+            return sentiment_responses
         except Exception as e:
             logging.error(f"Error analyzing sentiment: {e}")
             return None

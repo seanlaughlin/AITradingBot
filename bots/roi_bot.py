@@ -4,6 +4,7 @@ from ta.momentum import roc
 from keras.models import model_from_json
 import numpy as np
 import joblib
+import logging
 
 
 class RoiBot:
@@ -11,7 +12,7 @@ class RoiBot:
         self.prediction_candle = None
         self.ticker_symbol = ticker_symbol
         self.model = self.load_model(model_architecture_path, model_weights_path)
-        self.data = self.get_last_26_candles()
+        self.data = self.get_historical_candles()
         self.scaler_X = self.load_scaler(scaler_X_path)
         self.scaler_y = self.load_scaler(scaler_y_path)
         self.update_features()
@@ -30,10 +31,10 @@ class RoiBot:
         scaler = joblib.load(scaler_path)
         return scaler
 
-    def get_last_26_candles(self):
+    def get_historical_candles(self):
         data = yf.download(self.ticker_symbol, interval='15m', period='5d', prepost=True)
-        last_26_candles = data.iloc[-26:]
-        return last_26_candles
+        last_candles = data.iloc[-26:]
+        return last_candles
 
     def calculate_macd_momentum(self):
         macd = MACD(self.data['Close'])
@@ -49,7 +50,7 @@ class RoiBot:
         self.data['Momentum_Change'] = self.data['Momentum'].diff()
 
     def update_features(self):
-        self.data = yf.download(self.ticker_symbol, interval='15m', period='7d', prepost=True)
+        self.data = self.get_historical_candles()
 
         macd = MACD(self.data['Close'])
         self.data['MACD'] = macd.macd()
@@ -74,4 +75,18 @@ class RoiBot:
     def predict_roi(self):
         prediction = self.model.predict(self.prediction_candle)
         prediction_scaled = self.scaler_y.inverse_transform(prediction)
+        logging.info("Predicted ROI (15 minutes): %s", prediction_scaled)
         return prediction_scaled[0][0]
+
+    def get_roi_points(self):
+        predicted_roi = self.predict_roi()
+        roi_points = 0
+        if predicted_roi > 0.1:
+            roi_points = roi_points + 1
+        if predicted_roi > 0.5:
+            roi_points = roi_points + 1
+        if predicted_roi < 0:
+            roi_points = roi_points - 1
+        if predicted_roi < -0.5:
+            roi_points = roi_points - 1
+        return roi_points
